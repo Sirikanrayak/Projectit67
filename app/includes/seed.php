@@ -1,6 +1,28 @@
 <?php
 declare(strict_types=1);
 
+// รองรับฐานข้อมูลที่สร้างไว้ก่อนมี site settings — ขยายคอลัมน์และเติมค่าเริ่มต้นให้เสมอ (ปลอดภัยที่จะรันซ้ำ)
+function ensure_site_settings(PDO $pdo): void
+{
+    $col = $pdo->query("SHOW COLUMNS FROM settings LIKE 'value'")->fetch();
+    if ($col && stripos($col['Type'], 'text') === false) {
+        $pdo->exec('ALTER TABLE settings MODIFY `value` TEXT');
+    }
+
+    $defaults = [
+        'require_approval' => '1',
+        'site_name' => 'ระบบติดตามโครงงานนักเรียน',
+        'site_subtitle' => 'สาขาวิชาเทคโนโลยีสารสนเทศ · วิทยาลัยเทคนิคนครนายก',
+        'site_logo' => '',
+        'site_logo_text' => 'IT',
+        'footer_text' => '©ศิริกัลยา 2565 แผนกวิชาเทคโนโลยีสารสนเทศ วิทยาลัยเทคนิคนครนายก · ข้อมูลบันทึกลงฐานข้อมูล MySQL',
+    ];
+    $stmt = $pdo->prepare('INSERT IGNORE INTO settings (`key`, `value`) VALUES (:k, :v)');
+    foreach ($defaults as $k => $v) {
+        $stmt->execute(['k' => $k, 'v' => $v]);
+    }
+}
+
 function seed_if_empty(PDO $pdo): void
 {
     $hasAdmin = (int) $pdo->query("SELECT COUNT(*) c FROM users WHERE role='admin'")->fetch()['c'];

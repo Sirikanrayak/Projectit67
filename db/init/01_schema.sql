@@ -19,7 +19,7 @@ CREATE TABLE IF NOT EXISTS users (
 
 CREATE TABLE IF NOT EXISTS settings (
   `key`   VARCHAR(50) PRIMARY KEY,
-  `value` VARCHAR(255)
+  `value` TEXT
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS projects (
@@ -72,4 +72,10 @@ CREATE TABLE IF NOT EXISTS project_files (
   CONSTRAINT fk_pf_project FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-INSERT IGNORE INTO settings (`key`, `value`) VALUES ('require_approval', '1');
+INSERT IGNORE INTO settings (`key`, `value`) VALUES
+  ('require_approval', '1'),
+  ('site_name', 'ระบบติดตามโครงงานนักเรียน'),
+  ('site_subtitle', 'สาขาวิชาเทคโนโลยีสารสนเทศ · วิทยาลัยเทคนิคนครนายก'),
+  ('site_logo', ''),
+  ('site_logo_text', 'IT'),
+  ('footer_text', '©ศิริกัลยา 2565 แผนกวิชาเทคโนโลยีสารสนเทศ วิทยาลัยเทคนิคนครนายก · ข้อมูลบันทึกลงฐานข้อมูล MySQL');

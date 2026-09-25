@@ -100,7 +100,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-$pageTitle = 'นำเข้าข้อมูล | ระบบติดตามโครงงานนักเรียน';
+$pageTitle = 'นำเข้าข้อมูล | ' . site_setting($pdo, 'site_name');
 $activeView = 'projects';
 require __DIR__ . '/../includes/layout/head.php';
 require __DIR__ . '/../includes/layout/app_nav.php';

@@ -52,7 +52,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-$pageTitle = 'บัญชีของฉัน | ระบบติดตามโครงงานนักเรียน';
+$pageTitle = 'บัญชีของฉัน | ' . site_setting($pdo, 'site_name');
 $activeView = '';
 require __DIR__ . '/../includes/layout/head.php';
 require __DIR__ . '/../includes/layout/app_nav.php';

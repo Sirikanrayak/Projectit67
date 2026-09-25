@@ -12,7 +12,7 @@ foreach (get_all_projects($pdo) as $p) {
 }
 $requireApproval = $pdo->query("SELECT value FROM settings WHERE `key`='require_approval'")->fetch()['value'] ?? '1';
 
-$pageTitle = 'จัดการผู้ใช้ | ระบบติดตามโครงงานนักเรียน';
+$pageTitle = 'จัดการผู้ใช้ | ' . site_setting($pdo, 'site_name');
 $activeView = 'users';
 require __DIR__ . '/../includes/layout/head.php';
 require __DIR__ . '/../includes/layout/app_nav.php';

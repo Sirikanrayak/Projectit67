@@ -1,6 +1,8 @@
 .env
 app/storage/uploads/*
 !app/storage/uploads/.gitkeep
+app/public/assets/branding/*
+!app/public/assets/branding/.gitkeep
 *.log
 .DS_Store
 Thumbs.db

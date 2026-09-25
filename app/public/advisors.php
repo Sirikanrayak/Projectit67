@@ -16,7 +16,7 @@ foreach ($projects as $p) {
 }
 uasort($rows, fn ($a, $b) => $b['n'] <=> $a['n']);
 
-$pageTitle = 'ครูที่ปรึกษา | ระบบติดตามโครงงานนักเรียน';
+$pageTitle = 'ครูที่ปรึกษา | ' . site_setting($pdo, 'site_name');
 $activeView = 'advisors';
 require __DIR__ . '/../includes/layout/head.php';
 require __DIR__ . '/../includes/layout/app_nav.php';

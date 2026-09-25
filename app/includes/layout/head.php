@@ -1,9 +1,21 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
+<script>
+  // ตั้งค่าโหมดกลางวัน/กลางคืนก่อนวาดหน้า เพื่อไม่ให้กระพริบสีผิดตอนโหลด
+  (function () {
+    try {
+      var t = localStorage.getItem('theme');
+      document.documentElement.setAttribute('data-theme', (t === 'dark') ? 'dark' : 'light');
+    } catch (e) {}
+  })();
+</script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title><?= esc($pageTitle ?? 'ระบบติดตามโครงงานนักเรียน') ?></title>
+<title><?= esc($pageTitle ?? site_setting($pdo, 'site_name')) ?></title>
+<?php $logoUrl = site_logo_url($pdo); if ($logoUrl): ?>
+<link rel="icon" href="<?= esc($logoUrl) ?>">
+<?php endif; ?>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@500;600&family=Sarabun:wght@400;500;600&display=swap" rel="stylesheet">

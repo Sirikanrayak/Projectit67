@@ -62,6 +62,15 @@ const DUE_SOON_DAYS = 7;
 const MAX_FILE_BYTES = 3 * 1024 * 1024;
 const MAX_FILES_PER_PROJECT = 8;
 
+// โลโก้เว็บไซต์ (site settings)
+const MAX_LOGO_BYTES = 2 * 1024 * 1024;
+const ALLOWED_LOGO_MIME = [
+    'image/png' => 'png',
+    'image/jpeg' => 'jpg',
+    'image/webp' => 'webp',
+    'image/gif' => 'gif',
+];
+
 const TH_MONTHS = ['ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.', 'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.'];
 const TH_MONTHS_FULL = ['มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม', 'มิถุนายน', 'กรกฎาคม', 'สิงหาคม', 'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม'];
 const WEEKDAYS_TH = ['อา', 'จ', 'อ', 'พ', 'พฤ', 'ศ', 'ส'];
@@ -187,4 +196,37 @@ function decode_json_array(?string $json): array
     if (!$json) return [];
     $v = json_decode($json, true);
     return is_array($v) ? $v : [];
+}
+
+const SITE_SETTING_DEFAULTS = [
+    'site_name' => 'ระบบติดตามโครงงานนักเรียน',
+    'site_subtitle' => 'สาขาวิชาเทคโนโลยีสารสนเทศ · วิทยาลัยเทคนิคนครนายก',
+    'site_logo' => '',
+    'site_logo_text' => 'IT',
+    'footer_text' => '©ศิริกัลยา 2565 แผนกวิชาเทคโนโลยีสารสนเทศ วิทยาลัยเทคนิคนครนายก · ข้อมูลบันทึกลงฐานข้อมูล MySQL',
+];
+
+function get_all_settings(PDO $pdo): array
+{
+    static $cache = null;
+    if ($cache !== null) return $cache;
+    $rows = $pdo->query('SELECT `key`, `value` FROM settings')->fetchAll(PDO::FETCH_KEY_PAIR);
+    return $cache = array_merge(SITE_SETTING_DEFAULTS, array_filter($rows, fn ($v) => $v !== null && $v !== ''));
+}
+
+function site_setting(PDO $pdo, string $key): string
+{
+    return (string) (get_all_settings($pdo)[$key] ?? (SITE_SETTING_DEFAULTS[$key] ?? ''));
+}
+
+function set_site_setting(PDO $pdo, string $key, string $value): void
+{
+    $pdo->prepare('INSERT INTO settings (`key`, `value`) VALUES (:k, :v) ON DUPLICATE KEY UPDATE `value` = :v2')
+        ->execute(['k' => $key, 'v' => $value, 'v2' => $value]);
+}
+
+function site_logo_url(PDO $pdo): ?string
+{
+    $file = site_setting($pdo, 'site_logo');
+    return $file !== '' ? 'assets/branding/' . $file : null;
 }

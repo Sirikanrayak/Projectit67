@@ -76,7 +76,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-$pageTitle = ($editUser ? 'แก้ไขผู้ใช้' : 'เพิ่มผู้ใช้') . ' | ระบบติดตามโครงงานนักเรียน';
+$pageTitle = ($editUser ? 'แก้ไขผู้ใช้' : 'เพิ่มผู้ใช้') . ' | ' . site_setting($pdo, 'site_name');
 $activeView = 'users';
 require __DIR__ . '/../includes/layout/head.php';
 require __DIR__ . '/../includes/layout/app_nav.php';

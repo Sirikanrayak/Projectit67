@@ -41,4 +41,5 @@ if (!$pdo) {
 
 require_once __DIR__ . '/helpers.php';
 require_once __DIR__ . '/seed.php';
+ensure_site_settings($pdo);
 seed_if_empty($pdo);

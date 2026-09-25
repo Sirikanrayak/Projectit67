@@ -21,7 +21,7 @@ $evScores = $ev['scores'] ?? [];
 $evTotal = array_sum(array_map(fn ($r) => (int) ($evScores[$r['key']] ?? 0), RUBRIC));
 $maxesJson = esc(json_encode(array_column(RUBRIC, 'max', 'key')));
 
-$pageTitle = esc($project['title']) . ' | ระบบติดตามโครงงานนักเรียน';
+$pageTitle = esc($project['title']) . ' | ' . site_setting($pdo, 'site_name');
 $activeView = 'projects';
 require __DIR__ . '/../includes/layout/head.php';
 require __DIR__ . '/../includes/layout/app_nav.php';

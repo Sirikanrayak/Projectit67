@@ -4,19 +4,27 @@
 /** @var string $activeView */
 $dueSoon = due_soon_projects($pdo, $user);
 $pendingUsers = is_admin($user) ? (int) $pdo->query("SELECT COUNT(*) c FROM users WHERE status='pending'")->fetch()['c'] : 0;
+$siteName = site_setting($pdo, 'site_name');
+$siteSubtitle = site_setting($pdo, 'site_subtitle');
+$logoUrl = site_logo_url($pdo);
 ?>
 <header>
   <div class="wrap">
     <div class="head-row">
       <div class="brand">
-        <div class="logo">IT</div>
+        <?php if ($logoUrl): ?>
+          <img class="logo logo-img" src="<?= esc($logoUrl) ?>" alt="<?= esc($siteName) ?>">
+        <?php else: ?>
+          <div class="logo"><?= esc(site_setting($pdo, 'site_logo_text')) ?></div>
+        <?php endif; ?>
         <div>
-          <h1>ระบบติดตามโครงงานนักเรียน</h1>
-          <p>สาขาวิชาเทคโนโลยีสารสนเทศ · วิทยาลัยเทคนิคนครนายก</p>
+          <h1><?= esc($siteName) ?></h1>
+          <?php if ($siteSubtitle !== ''): ?><p><?= esc($siteSubtitle) ?></p><?php endif; ?>
         </div>
       </div>
       <div class="userbox">
         <div class="who"><span><?= esc($user['name']) ?></span><small><?= esc(ROLE_TEXT[$user['role']]) ?><?= $user['role'] === 'student' && $user['level'] ? ' · ' . esc($user['level']) . ($user['student_group'] ? '/' . esc($user['student_group']) : '') : '' ?></small></div>
+        <button type="button" class="hbtn" id="btnTheme" title="สลับโหมดกลางวัน/กลางคืน">🌙</button>
         <div class="notif-wrap">
           <button type="button" class="hbtn" id="btnNotif" title="การแจ้งเตือนกำหนดส่ง">🔔<span class="count" id="notifCount"<?= $dueSoon ? '' : ' hidden' ?>><?= count($dueSoon) ?></span></button>
           <div class="notif-panel" id="notifPanel" hidden>
@@ -41,6 +49,7 @@ $pendingUsers = is_admin($user) ? (int) $pdo->query("SELECT COUNT(*) c FROM user
       <?php if (is_admin($user)): ?>
         <a class="<?= $activeView === 'advisors' ? 'active' : '' ?>" href="advisors.php">🧑‍🏫 ครูที่ปรึกษา</a>
         <a class="<?= $activeView === 'users' ? 'active' : '' ?>" href="users.php">👥 จัดการผู้ใช้<?php if ($pendingUsers): ?> <span class="count"><?= $pendingUsers ?></span><?php endif; ?></a>
+        <a class="<?= $activeView === 'settings' ? 'active' : '' ?>" href="site_settings.php">⚙️ ตั้งค่าระบบ</a>
       <?php endif; ?>
     </nav>
   </div>

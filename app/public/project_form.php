@@ -112,7 +112,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-$pageTitle = ($project ? 'แก้ไขโครงงาน' : 'เพิ่มโครงงาน') . ' | ระบบติดตามโครงงานนักเรียน';
+$pageTitle = ($project ? 'แก้ไขโครงงาน' : 'เพิ่มโครงงาน') . ' | ' . site_setting($pdo, 'site_name');
 $activeView = 'projects';
 require __DIR__ . '/../includes/layout/head.php';
 require __DIR__ . '/../includes/layout/app_nav.php';

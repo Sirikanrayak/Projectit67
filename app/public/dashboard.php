@@ -39,7 +39,7 @@ $recentLogs = array_slice($recentLogs, 0, 6);
 
 $pendingCount = is_admin($user) ? (int) $pdo->query("SELECT COUNT(*) c FROM users WHERE status='pending'")->fetch()['c'] : 0;
 
-$pageTitle = 'ภาพรวม | ระบบติดตามโครงงานนักเรียน';
+$pageTitle = 'ภาพรวม | ' . site_setting($pdo, 'site_name');
 $activeView = 'dashboard';
 require __DIR__ . '/../includes/layout/head.php';
 require __DIR__ . '/../includes/layout/app_nav.php';

@@ -28,15 +28,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-$pageTitle = 'เข้าสู่ระบบ | ระบบติดตามโครงงานนักเรียน';
+$pageTitle = 'เข้าสู่ระบบ | ' . site_setting($pdo, 'site_name');
 require __DIR__ . '/../includes/layout/head.php';
+$siteName = site_setting($pdo, 'site_name');
+$siteSubtitle = site_setting($pdo, 'site_subtitle');
+$logoUrl = site_logo_url($pdo);
 ?>
+<button type="button" class="hbtn theme-toggle-auth" id="btnTheme" title="สลับโหมดกลางวัน/กลางคืน">🌙</button>
 <div class="auth">
   <div class="auth-card">
     <div class="auth-head">
-      <div class="logo">IT</div>
-      <h1>ระบบติดตามโครงงานนักเรียน</h1>
-      <p>สาขาวิชาเทคโนโลยีสารสนเทศ · วิทยาลัยเทคนิคนครนายก</p>
+      <?php if ($logoUrl): ?>
+        <img class="logo logo-img" src="<?= esc($logoUrl) ?>" alt="<?= esc($siteName) ?>">
+      <?php else: ?>
+        <div class="logo"><?= esc(site_setting($pdo, 'site_logo_text')) ?></div>
+      <?php endif; ?>
+      <h1><?= esc($siteName) ?></h1>
+      <?php if ($siteSubtitle !== ''): ?><p><?= esc($siteSubtitle) ?></p><?php endif; ?>
     </div>
     <div class="auth-tabs">
       <a class="active" href="login.php">เข้าสู่ระบบ</a>

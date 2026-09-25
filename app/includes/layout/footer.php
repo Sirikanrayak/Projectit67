@@ -1,6 +1,6 @@
 <?php $flash = flash_take(); ?>
 <footer>
-  ©ศิริกัลยา 2565 แผนกวิชาเทคโนโลยีสารสนเทศ วิทยาลัยเทคนิคนครนายก · ข้อมูลบันทึกลงฐานข้อมูล MySQL
+  <?= esc(site_setting($pdo, 'footer_text')) ?>
 </footer>
 
 <script src="assets/js/app.js"></script>

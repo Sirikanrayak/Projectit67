@@ -27,7 +27,7 @@ $todayIso = $today->format('Y-m-d');
 $timeline = array_values(array_filter($list, fn ($p) => $p['due_date']));
 usort($timeline, fn ($a, $b) => strcmp($a['due_date'], $b['due_date']));
 
-$pageTitle = 'ปฏิทิน | ระบบติดตามโครงงานนักเรียน';
+$pageTitle = 'ปฏิทิน | ' . site_setting($pdo, 'site_name');
 $activeView = 'calendar';
 require __DIR__ . '/../includes/layout/head.php';
 require __DIR__ . '/../includes/layout/app_nav.php';

@@ -1,4 +1,18 @@
 (() => {
+  // สลับโหมดกลางวัน/กลางคืน (ค่าที่เลือกจำไว้ใน localStorage ต่อเบราว์เซอร์)
+  const themeBtn = document.getElementById('btnTheme');
+  if (themeBtn) {
+    const root = document.documentElement;
+    const syncIcon = () => { themeBtn.textContent = root.getAttribute('data-theme') === 'dark' ? '☀️' : '🌙'; };
+    syncIcon();
+    themeBtn.addEventListener('click', () => {
+      const next = root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+      root.setAttribute('data-theme', next);
+      try { localStorage.setItem('theme', next); } catch (e) {}
+      syncIcon();
+    });
+  }
+
   // แจ้งเตือนกำหนดส่ง: เปิด/ปิดแผงรายการ
   const notifBtn = document.getElementById('btnNotif');
   const notifPanel = document.getElementById('notifPanel');

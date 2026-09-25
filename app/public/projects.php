@@ -4,7 +4,7 @@ $user = require_login($pdo);
 
 $list = visible_projects($pdo, $user);
 
-$pageTitle = 'โครงงาน | ระบบติดตามโครงงานนักเรียน';
+$pageTitle = 'โครงงาน | ' . site_setting($pdo, 'site_name');
 $activeView = 'projects';
 require __DIR__ . '/../includes/layout/head.php';
 require __DIR__ . '/../includes/layout/app_nav.php';
