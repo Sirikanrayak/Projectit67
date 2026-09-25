@@ -1,6 +1,6 @@
 <?php
 require __DIR__ . '/../includes/bootstrap.php';
-$admin = require_role($pdo, ['admin']);
+$user = require_role($pdo, ['admin']);
 
 $editId = isset($_GET['id']) ? (int) $_GET['id'] : null;
 $editUser = null;
@@ -40,7 +40,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $errors[] = 'รหัสนักเรียนนี้มีผู้ใช้แล้ว';
     } elseif ((!$editUser || $pw) && password_error($pw)) {
         $errors[] = password_error($pw);
-    } elseif ($editUser && (int) $editUser['id'] === (int) $admin['id'] && ($values['role'] !== 'admin' || $values['status'] !== 'active')) {
+    } elseif ($editUser && (int) $editUser['id'] === (int) $user['id'] && ($values['role'] !== 'admin' || $values['status'] !== 'active')) {
         $errors[] = 'ไม่สามารถลดสิทธิ์หรือระงับบัญชีของตัวเองได้';
     } elseif ($values['role'] === 'teacher' && $stmtTeacherName->fetch()) {
         $errors[] = 'มีบัญชีครูที่ปรึกษาชื่อนี้แล้ว';
