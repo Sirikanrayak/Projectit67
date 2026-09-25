@@ -13,6 +13,41 @@
     });
   }
 
+  // หน้าเข้าสู่ระบบ: สลับแท็บนักเรียน/บุคลากร เปลี่ยนป้ายชื่อและตัวอย่างข้อความในช่องกรอก
+  const roleTabs = document.getElementById('roleTabs');
+  const loginLabel = document.getElementById('loginLabel');
+  const loginInput = document.getElementById('loginInput');
+  if (roleTabs && loginLabel && loginInput) {
+    const roleText = {
+      student: { label: '🎫 รหัสนักเรียน', placeholder: 'เช่น 66301040001' },
+      staff: { label: '🎫 อีเมล', placeholder: 'you@example.com' },
+    };
+    roleTabs.querySelectorAll('button').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        roleTabs.querySelectorAll('button').forEach((b) => b.classList.toggle('active', b === btn));
+        const t = roleText[btn.dataset.role];
+        loginLabel.textContent = t.label;
+        loginInput.placeholder = t.placeholder;
+        loginInput.focus();
+      });
+    });
+  }
+
+  // ลิงก์ "ลืมรหัสผ่าน?" หน้าเข้าสู่ระบบ
+  const forgotLink = document.getElementById('forgotLink');
+  if (forgotLink) {
+    forgotLink.addEventListener('click', (e) => {
+      e.preventDefault();
+      Swal.fire({
+        icon: 'info',
+        title: 'ลืมรหัสผ่าน?',
+        text: 'กรุณาติดต่อครูที่ปรึกษาหรือผู้ดูแลระบบเพื่อขอตั้งรหัสผ่านใหม่',
+        confirmButtonText: 'เข้าใจแล้ว',
+        confirmButtonColor: '#ea580c',
+      });
+    });
+  }
+
   // แจ้งเตือนกำหนดส่ง: เปิด/ปิดแผงรายการ
   const notifBtn = document.getElementById('btnNotif');
   const notifPanel = document.getElementById('notifPanel');

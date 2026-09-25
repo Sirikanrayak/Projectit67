@@ -94,6 +94,48 @@ a { color: inherit; }
 .pw-rules li.ok::before { content: "✓"; }
 .pw-rules code { background: var(--surface); border: 1px solid var(--line); border-radius: 4px; padding: 0 5px; color: var(--brand-700); font-size: .9rem; }
 .hint { font-size: .85rem; color: var(--muted); text-align: center; margin: 0; }
+.hint a { color: var(--brand-700); font-weight: 600; text-decoration: none; }
+.hint a:hover { text-decoration: underline; }
+
+/* ---------- Auth: หน้าเข้าสู่ระบบแบบแบ่งครึ่งซ้าย/ขวา ---------- */
+.auth.auth-split { background: var(--brand-50); }
+.auth-shell {
+  width: 100%; max-width: 920px; min-height: 600px;
+  background: var(--surface); border-radius: 24px;
+  box-shadow: 0 24px 60px rgba(0,0,0,.18);
+  overflow: hidden;
+  display: grid; grid-template-columns: 1fr 1fr;
+}
+@media (max-width: 760px) { .auth-shell { grid-template-columns: 1fr; min-height: auto; } .auth-hero { display: none; } }
+
+.auth-hero {
+  color: var(--white);
+  padding: 48px 40px;
+  display: flex; flex-direction: column; justify-content: center; gap: 14px;
+  background:
+    repeating-linear-gradient(45deg, rgba(255,255,255,.07) 0 2px, transparent 2px 16px),
+    linear-gradient(160deg, var(--brand-900), var(--brand-600));
+}
+.auth-hero-mark {
+  width: 64px; height: 64px; border-radius: 50%;
+  background: rgba(255,255,255,.15);
+  display: grid; place-items: center; font-size: 30px; margin-bottom: 8px;
+}
+.auth-hero h2 { font-size: 1.6rem; line-height: 1.35; }
+.auth-hero p { margin: 0; opacity: .92; font-size: .95rem; line-height: 1.7; max-width: 34ch; }
+
+.auth-panel { padding: 40px 36px; display: flex; flex-direction: column; justify-content: center; }
+.auth-panel .auth-head { padding: 0 0 6px; text-align: center; }
+.auth-panel .auth-body { padding: 0; margin-top: 14px; }
+
+.role-tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; background: var(--brand-50); border-radius: 10px; padding: 4px; margin-top: 8px; }
+.role-tabs button { border: 0; background: transparent; padding: 9px; border-radius: 8px; cursor: pointer; color: var(--muted); font-weight: 500; }
+.role-tabs button.active { background: var(--brand-600); color: var(--white); font-weight: 600; box-shadow: var(--shadow); }
+
+.auth-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; font-size: .88rem; }
+.auth-row a { color: var(--brand-700); text-decoration: none; font-weight: 500; }
+.auth-row a:hover { text-decoration: underline; }
+.security-note { text-align: center; color: var(--muted); font-size: .82rem; margin: 2px 0 0; }
 
 /* ---------- Header ---------- */
 header {

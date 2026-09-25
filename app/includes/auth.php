@@ -19,10 +19,22 @@ function current_user(PDO $pdo): ?array
     return $cached = $user;
 }
 
-function login_user(array $user): void
+function login_user(array $user, bool $remember = false): void
 {
     session_regenerate_id(true);
     $_SESSION['user_id'] = (int) $user['id'];
+
+    if ($remember) {
+        $params = session_get_cookie_params();
+        setcookie(session_name(), session_id(), [
+            'expires' => time() + 60 * 60 * 24 * 30,
+            'path' => $params['path'],
+            'domain' => $params['domain'],
+            'secure' => $params['secure'],
+            'httponly' => $params['httponly'],
+            'samesite' => $params['samesite'] ?: 'Lax',
+        ]);
+    }
 }
 
 function logout_user(): void
