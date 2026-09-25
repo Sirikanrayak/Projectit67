@@ -1,0 +1,68 @@
+services:
+  web:
+    image: webdevops/php-nginx:8.3
+    container_name: projectit67_web
+    restart: unless-stopped
+    ports:
+      - "8080:80"
+    environment:
+      WEB_DOCUMENT_ROOT: /app/public
+      PHP_DISPLAY_ERRORS: 1
+      PHP_MEMORY_LIMIT: 256M
+      UPLOAD_MAX_FILESIZE: 5M
+      POST_MAX_SIZE: 10M
+      DB_HOST: db
+      DB_PORT: 3306
+      DB_NAME: ${DB_NAME}
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - ./app:/app
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - projectit67
+
+  db:
+    image: mysql:8.0
+    container_name: projectit67_db
+    restart: unless-stopped
+    ports:
+      - "${DB_HOST_PORT:-3306}:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${DB_NAME}
+      MYSQL_USER: ${DB_USER}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - db_data:/var/lib/mysql
+      - ./db/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-p${DB_ROOT_PASSWORD}"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    networks:
+      - projectit67
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: projectit67_phpmyadmin
+    restart: unless-stopped
+    ports:
+      - "8081:80"
+    environment:
+      PMA_HOST: db
+      PMA_USER: ${DB_USER}
+      PMA_PASSWORD: ${DB_PASSWORD}
+    depends_on:
+      - db
+    networks:
+      - projectit67
+
+volumes:
+  db_data:
+
+networks:
+  projectit67:
