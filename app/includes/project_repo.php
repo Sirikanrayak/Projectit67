@@ -147,6 +147,31 @@ function get_project_files(PDO $pdo, int $projectId): array
     return $stmt->fetchAll();
 }
 
+function get_qc_rows(PDO $pdo, int $projectId): array
+{
+    $stmt = $pdo->prepare('SELECT * FROM project_qc WHERE project_id = ?');
+    $stmt->execute([$projectId]);
+    return array_column($stmt->fetchAll(), null, 'step_key');
+}
+
+function qc_can_sign(array $project, array $user, string $role): bool
+{
+    if ($user['role'] === 'admin') return true;
+    if ($role === 'advisor') return project_advises($project, $user);
+    if ($role === 'instructor') return project_taught_by($project, $user);
+    if ($role === 'any') return project_advises($project, $user) || project_taught_by($project, $user);
+    return false;
+}
+
+function qc_all_passed(PDO $pdo, int $projectId): bool
+{
+    $rows = get_qc_rows($pdo, $projectId);
+    foreach (QC_STEPS as $step) {
+        if (($rows[$step['key']]['status'] ?? null) !== 'pass') return false;
+    }
+    return true;
+}
+
 function rename_advisor_everywhere(PDO $pdo, string $oldName, string $newName): void
 {
     if ($oldName === '' || $oldName === $newName) return;

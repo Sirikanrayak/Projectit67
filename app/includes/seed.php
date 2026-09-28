@@ -39,6 +39,25 @@ function ensure_teacher_assignments(PDO $pdo): void
     );
 }
 
+// รองรับฐานข้อมูลที่สร้างไว้ก่อนมีระบบกำกับคุณภาพวิชาโครงงาน — สร้างตารางถ้ายังไม่มี (ปลอดภัยที่จะรันซ้ำ)
+function ensure_project_qc(PDO $pdo): void
+{
+    $pdo->exec(
+        "CREATE TABLE IF NOT EXISTS project_qc (
+          id            INT AUTO_INCREMENT PRIMARY KEY,
+          project_id    INT NOT NULL,
+          step_key      VARCHAR(20) NOT NULL,
+          status        ENUM('pass','fail') NOT NULL,
+          signed_by     VARCHAR(150) NOT NULL DEFAULT '',
+          signed_date   DATE DEFAULT NULL,
+          note          TEXT,
+          updated_at    DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+          UNIQUE KEY uniq_project_step (project_id, step_key),
+          CONSTRAINT fk_qc_project FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci"
+    );
+}
+
 function seed_if_empty(PDO $pdo): void
 {
     $hasAdmin = (int) $pdo->query("SELECT COUNT(*) c FROM users WHERE role='admin'")->fetch()['c'];

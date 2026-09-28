@@ -43,4 +43,5 @@ require_once __DIR__ . '/helpers.php';
 require_once __DIR__ . '/seed.php';
 ensure_site_settings($pdo);
 ensure_teacher_assignments($pdo);
+ensure_project_qc($pdo);
 seed_if_empty($pdo);

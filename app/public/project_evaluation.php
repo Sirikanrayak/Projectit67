@@ -8,6 +8,10 @@ $pid = (int) ($_POST['project_id'] ?? 0);
 $project = get_project($pdo, $pid);
 
 if ($project && project_can_grade($project, $user)) {
+    if ($user['role'] !== 'admin' && !qc_all_passed($pdo, $pid)) {
+        flash_set('err', 'ไม่สามารถบันทึกผลการประเมินได้ เนื่องจากยังผ่านการกำกับคุณภาพไม่ครบทุกขั้นตอน');
+        redirect('project_detail.php?id=' . $pid);
+    }
     $scores = [];
     foreach (RUBRIC as $r) {
         $raw = $_POST[$r['key']] ?? '';

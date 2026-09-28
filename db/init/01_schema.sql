@@ -82,6 +82,19 @@ CREATE TABLE IF NOT EXISTS teacher_assignments (
   CONSTRAINT fk_ta_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+CREATE TABLE IF NOT EXISTS project_qc (
+  id            INT AUTO_INCREMENT PRIMARY KEY,
+  project_id    INT NOT NULL,
+  step_key      VARCHAR(20) NOT NULL,
+  status        ENUM('pass','fail') NOT NULL,
+  signed_by     VARCHAR(150) NOT NULL DEFAULT '',
+  signed_date   DATE DEFAULT NULL,
+  note          TEXT,
+  updated_at    DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  UNIQUE KEY uniq_project_step (project_id, step_key),
+  CONSTRAINT fk_qc_project FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 INSERT IGNORE INTO settings (`key`, `value`) VALUES
   ('require_approval', '1'),
   ('site_name', 'ระบบติดตามโครงงานนักเรียน'),

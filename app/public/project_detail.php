@@ -16,6 +16,9 @@ $accounts = member_accounts($pdo, $project);
 $memberNames = member_display_names($pdo, $project);
 $logs = get_project_logs($pdo, $id);
 $files = get_project_files($pdo, $id);
+$qcRows = get_qc_rows($pdo, $id);
+$qcPassed = qc_all_passed($pdo, $id);
+$gradingBlocked = $grading && $user['role'] !== 'admin' && !$qcPassed;
 $ev = $project['evaluation'];
 $evScores = $ev['scores'] ?? [];
 $evTotal = array_sum(array_map(fn ($r) => (int) ($evScores[$r['key']] ?? 0), RUBRIC));
@@ -131,8 +134,55 @@ require __DIR__ . '/../includes/layout/app_nav.php';
       </form>
     <?php endif; ?>
 
+    <div class="section-title">การกำกับคุณภาพวิชาโครงงาน</div>
+    <?php if ($qcPassed): ?>
+      <p class="msg ok" style="margin-bottom:10px">✅ ผ่านการกำกับคุณภาพครบทุกขั้นตอนแล้ว สามารถออกผลการประเมินได้</p>
+    <?php else: ?>
+      <p class="msg err" style="margin-bottom:10px">🚫 ยังผ่านการกำกับคุณภาพไม่ครบทุกขั้นตอน — ครูผู้สอนวิชาโครงการจะระงับการออกเกรดจนกว่าจะผ่านครบ</p>
+    <?php endif; ?>
+    <ul style="list-style:none;padding:0;margin:0 0 16px">
+      <?php foreach (QC_STEPS as $i => $step):
+          $row = $qcRows[$step['key']] ?? null;
+          $status = $row['status'] ?? null;
+          $canSign = qc_can_sign($project, $user, $step['role']);
+      ?>
+        <li style="display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--line);flex-wrap:wrap">
+          <div style="flex:1 1 320px">
+            <div><?= $i + 1 ?>. <?= esc($step['text']) ?></div>
+            <?php if ($row): ?>
+              <small style="color:var(--muted)"><?= esc($row['signed_by']) ?> · <?= thai_date($row['signed_date']) ?><?= $row['note'] ? ' · ' . esc($row['note']) : '' ?></small>
+            <?php endif; ?>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <?php if ($status === 'pass'): ?><span class="badge done">ผ่าน</span>
+            <?php elseif ($status === 'fail'): ?><span class="badge late">ไม่ผ่าน</span>
+            <?php else: ?><span class="badge notstarted">รอดำเนินการ</span>
+            <?php endif; ?>
+            <?php if ($canSign): ?>
+              <form method="post" action="project_qc_update.php" style="display:inline">
+                <?= csrf_field() ?>
+                <input type="hidden" name="project_id" value="<?= $id ?>">
+                <input type="hidden" name="step_key" value="<?= esc($step['key']) ?>">
+                <input type="hidden" name="status" value="pass">
+                <button type="submit" class="btn ghost sm">✅ ผ่าน</button>
+              </form>
+              <form method="post" action="project_qc_update.php" style="display:inline" data-confirm="ยืนยันบันทึกว่าไม่ผ่านขั้นตอนนี้?">
+                <?= csrf_field() ?>
+                <input type="hidden" name="project_id" value="<?= $id ?>">
+                <input type="hidden" name="step_key" value="<?= esc($step['key']) ?>">
+                <input type="hidden" name="status" value="fail">
+                <button type="submit" class="btn danger sm">❌ ไม่ผ่าน</button>
+              </form>
+            <?php endif; ?>
+          </div>
+        </li>
+      <?php endforeach; ?>
+    </ul>
+
     <div class="section-title">การประเมินผลโครงงาน</div>
-    <?php if ($grading): ?>
+    <?php if ($gradingBlocked): ?>
+      <p style="color:var(--muted);margin:0">🚫 ยังไม่สามารถให้คะแนนได้ เนื่องจากยังผ่านการกำกับคุณภาพไม่ครบทุกขั้นตอนข้างต้น</p>
+    <?php elseif ($grading): ?>
       <form id="evalForm" method="post" action="project_evaluation.php" data-maxes="<?= $maxesJson ?>">
         <?= csrf_field() ?>
         <input type="hidden" name="project_id" value="<?= $id ?>">
