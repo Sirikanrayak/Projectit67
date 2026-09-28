@@ -95,6 +95,57 @@ CREATE TABLE IF NOT EXISTS project_qc (
   CONSTRAINT fk_qc_project FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+CREATE TABLE IF NOT EXISTS project_proposals (
+  id                   INT AUTO_INCREMENT PRIMARY KEY,
+  student_id           INT NOT NULL,
+  level                VARCHAR(20) NOT NULL DEFAULT '',
+  student_group        VARCHAR(20) NOT NULL DEFAULT '',
+  member_emails        TEXT,
+  status               ENUM('pending','approved','rejected') NOT NULL DEFAULT 'pending',
+  approved_project_id  INT DEFAULT NULL,
+  reviewed_by          VARCHAR(150) NOT NULL DEFAULT '',
+  reviewed_at          DATETIME DEFAULT NULL,
+  review_note          TEXT,
+  created_at           DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT fk_pp_student FOREIGN KEY (student_id) REFERENCES users(id) ON DELETE CASCADE,
+  CONSTRAINT fk_pp_project FOREIGN KEY (approved_project_id) REFERENCES projects(id) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS project_proposal_items (
+  id            INT AUTO_INCREMENT PRIMARY KEY,
+  proposal_id   INT NOT NULL,
+  seq           TINYINT NOT NULL,
+  title         VARCHAR(255) NOT NULL,
+  method        TEXT,
+  benefit       TEXT,
+  is_selected   TINYINT(1) NOT NULL DEFAULT 0,
+  CONSTRAINT fk_ppi_proposal FOREIGN KEY (proposal_id) REFERENCES project_proposals(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS project_progress_rounds (
+  id              INT AUTO_INCREMENT PRIMARY KEY,
+  project_id      INT NOT NULL,
+  round_no        TINYINT NOT NULL,
+  plan            TEXT,
+  submitted_work  TEXT,
+  submitted_date  DATE DEFAULT NULL,
+  rating          VARCHAR(10) DEFAULT NULL,
+  evaluated_by    VARCHAR(150) NOT NULL DEFAULT '',
+  evaluated_date  DATE DEFAULT NULL,
+  UNIQUE KEY uniq_project_round (project_id, round_no),
+  CONSTRAINT fk_ppr_project FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS project_defense_requests (
+  project_id       INT PRIMARY KEY,
+  requested_by     VARCHAR(150) NOT NULL DEFAULT '',
+  requested_date   DATE DEFAULT NULL,
+  instructor_note  TEXT,
+  instructor_by    VARCHAR(150) NOT NULL DEFAULT '',
+  instructor_date  DATE DEFAULT NULL,
+  CONSTRAINT fk_pdr_project FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 INSERT IGNORE INTO settings (`key`, `value`) VALUES
   ('require_approval', '1'),
   ('site_name', 'ระบบติดตามโครงงานนักเรียน'),

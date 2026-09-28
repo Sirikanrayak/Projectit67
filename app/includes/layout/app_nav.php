@@ -4,6 +4,7 @@
 /** @var string $activeView */
 $dueSoon = due_soon_projects($pdo, $user);
 $pendingUsers = is_admin($user) ? (int) $pdo->query("SELECT COUNT(*) c FROM users WHERE status='pending'")->fetch()['c'] : 0;
+$pendingProposals = (is_admin($user) || !empty($user['instructor_of'])) ? count(get_pending_proposals_for_reviewer($pdo, $user)) : 0;
 $siteName = site_setting($pdo, 'site_name');
 $siteSubtitle = site_setting($pdo, 'site_subtitle');
 $logoUrl = site_logo_url($pdo);
@@ -46,7 +47,11 @@ $logoUrl = site_logo_url($pdo);
       <a class="<?= $activeView === 'dashboard' ? 'active' : '' ?>" href="dashboard.php">📊 ภาพรวม</a>
       <a class="<?= $activeView === 'projects' ? 'active' : '' ?>" href="projects.php"><?= is_admin($user) ? '📁 โครงงานทั้งหมด' : (is_teacher($user) ? (!empty($user['instructor_of']) ? '📁 โครงงานที่ดูแล' : '📁 โครงงานที่ปรึกษา') : '📁 โครงงานของฉัน') ?></a>
       <a class="<?= $activeView === 'calendar' ? 'active' : '' ?>" href="calendar.php">📅 ปฏิทิน</a>
+      <?php if ($user['role'] === 'student'): ?>
+        <a class="<?= $activeView === 'proposals' ? 'active' : '' ?>" href="proposals.php">📝 เสนอชื่อโครงงาน</a>
+      <?php endif; ?>
       <?php if (is_admin($user) || !empty($user['instructor_of'])): ?>
+        <a class="<?= $activeView === 'proposals' ? 'active' : '' ?>" href="proposals.php">📝 ข้อเสนอโครงงาน<?php if ($pendingProposals): ?> <span class="count"><?= $pendingProposals ?></span><?php endif; ?></a>
         <a class="<?= $activeView === 'summary' ? 'active' : '' ?>" href="project_summary.php">📋 สรุปโครงงาน</a>
       <?php endif; ?>
       <?php if (is_admin($user)): ?>

@@ -172,6 +172,76 @@ function qc_all_passed(PDO $pdo, int $projectId): bool
     return true;
 }
 
+// ---- ข้อเสนอชื่อโครงงาน (proposals) ----
+
+function get_student_proposals(PDO $pdo, int $studentId): array
+{
+    $stmt = $pdo->prepare('SELECT * FROM project_proposals WHERE student_id = ? ORDER BY created_at DESC');
+    $stmt->execute([$studentId]);
+    return $stmt->fetchAll();
+}
+
+function get_proposal(PDO $pdo, int $id): ?array
+{
+    $stmt = $pdo->prepare('SELECT * FROM project_proposals WHERE id = ?');
+    $stmt->execute([$id]);
+    $row = $stmt->fetch();
+    return $row ?: null;
+}
+
+function get_proposal_items(PDO $pdo, int $proposalId): array
+{
+    $stmt = $pdo->prepare('SELECT * FROM project_proposal_items WHERE proposal_id = ? ORDER BY seq');
+    $stmt->execute([$proposalId]);
+    return $stmt->fetchAll();
+}
+
+function proposal_can_review(array $proposal, array $user): bool
+{
+    if ($user['role'] === 'admin') return true;
+    return teaches_level_group($user, $proposal['level'], $proposal['student_group']);
+}
+
+function get_pending_proposals_for_reviewer(PDO $pdo, array $user): array
+{
+    if ($user['role'] === 'admin') {
+        return $pdo->query(
+            "SELECT pp.*, u.name AS student_name FROM project_proposals pp
+             JOIN users u ON u.id = pp.student_id
+             WHERE pp.status = 'pending' ORDER BY pp.created_at"
+        )->fetchAll();
+    }
+    if (empty($user['instructor_of'])) return [];
+    $rows = [];
+    $stmt = $pdo->prepare(
+        "SELECT pp.*, u.name AS student_name FROM project_proposals pp
+         JOIN users u ON u.id = pp.student_id
+         WHERE pp.status = 'pending' AND pp.level = ? AND pp.student_group = ? ORDER BY pp.created_at"
+    );
+    foreach ($user['instructor_of'] as $a) {
+        $stmt->execute([$a['level'], $a['student_group']]);
+        foreach ($stmt->fetchAll() as $r) $rows[$r['id']] = $r;
+    }
+    return array_values($rows);
+}
+
+// ---- รายงานความก้าวหน้าเป็นรอบทางการ (progress rounds) ----
+
+function get_progress_rounds(PDO $pdo, int $projectId): array
+{
+    $stmt = $pdo->prepare('SELECT * FROM project_progress_rounds WHERE project_id = ?');
+    $stmt->execute([$projectId]);
+    return array_column($stmt->fetchAll(), null, 'round_no');
+}
+
+function get_defense_request(PDO $pdo, int $projectId): ?array
+{
+    $stmt = $pdo->prepare('SELECT * FROM project_defense_requests WHERE project_id = ?');
+    $stmt->execute([$projectId]);
+    $row = $stmt->fetch();
+    return $row ?: null;
+}
+
 function rename_advisor_everywhere(PDO $pdo, string $oldName, string $newName): void
 {
     if ($oldName === '' || $oldName === $newName) return;

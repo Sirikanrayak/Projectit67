@@ -72,6 +72,18 @@ const QC_STEPS = [
     ['key' => 'step7b', 'text' => 'ตรวจสอบรูปเล่มและส่งรายงานฉบับสมบูรณ์ — ครูผู้สอนวิชาโครงการ', 'role' => 'instructor'],
 ];
 
+const PROPOSAL_STATUS_TEXT = ['pending' => 'รอพิจารณา', 'approved' => 'อนุมัติแล้ว', 'rejected' => 'ไม่อนุมัติ'];
+const PROPOSAL_STATUS_BADGE = ['pending' => 'soon', 'approved' => 'done', 'rejected' => 'late'];
+
+function proposal_status_badge(string $status): string
+{
+    $cls = PROPOSAL_STATUS_BADGE[$status] ?? 'notstarted';
+    $text = PROPOSAL_STATUS_TEXT[$status] ?? $status;
+    return '<span class="badge ' . esc($cls) . '">' . esc($text) . '</span>';
+}
+
+const PROGRESS_RATINGS = ['ดี', 'พอใช้', 'ปรับปรุง'];
+
 const DUE_SOON_DAYS = 7;
 const MAX_FILE_BYTES = 3 * 1024 * 1024;
 const MAX_FILES_PER_PROJECT = 8;

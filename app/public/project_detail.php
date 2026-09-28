@@ -19,6 +19,9 @@ $files = get_project_files($pdo, $id);
 $qcRows = get_qc_rows($pdo, $id);
 $qcPassed = qc_all_passed($pdo, $id);
 $gradingBlocked = $grading && $user['role'] !== 'admin' && !$qcPassed;
+$progressRounds = get_progress_rounds($pdo, $id);
+$defenseReq = get_defense_request($pdo, $id);
+$canRateProgress = qc_can_sign($project, $user, 'any');
 $ev = $project['evaluation'];
 $evScores = $ev['scores'] ?? [];
 $evTotal = array_sum(array_map(fn ($r) => (int) ($evScores[$r['key']] ?? 0), RUBRIC));
@@ -133,6 +136,82 @@ require __DIR__ . '/../includes/layout/app_nav.php';
         <button class="btn">➕ เพิ่ม</button>
       </form>
     <?php endif; ?>
+
+    <div class="section-title">รายงานความก้าวหน้า (รอบทางการ)</div>
+    <?php for ($r = 1; $r <= 3; $r++): $pr = $progressRounds[$r] ?? null; ?>
+      <div class="panel" style="margin-bottom:10px;padding:14px">
+        <strong>รอบที่ <?= $r ?></strong>
+        <?php if ($editable): ?>
+          <form method="post" action="project_progress_submit.php" style="margin-top:8px">
+            <?= csrf_field() ?>
+            <input type="hidden" name="project_id" value="<?= $id ?>">
+            <input type="hidden" name="round_no" value="<?= $r ?>">
+            <label class="f full" style="margin-bottom:8px">แผนงานที่จะดำเนินงาน
+              <textarea name="plan" rows="2"><?= esc($pr['plan'] ?? '') ?></textarea>
+            </label>
+            <label class="f full" style="margin-bottom:8px">ปริมาณงานที่ส่งประเมินความก้าวหน้า
+              <textarea name="submitted_work" rows="2"><?= esc($pr['submitted_work'] ?? '') ?></textarea>
+            </label>
+            <button type="submit" class="btn ghost sm">💾 บันทึกรอบที่ <?= $r ?></button>
+            <?php if (!empty($pr['submitted_date'])): ?><small style="color:var(--muted);margin-left:8px">ส่งล่าสุด <?= thai_date($pr['submitted_date']) ?></small><?php endif; ?>
+          </form>
+        <?php else: ?>
+          <p style="margin:6px 0"><strong>แผนงาน:</strong> <?= $pr['plan'] ? nl2br(esc($pr['plan'])) : '-' ?></p>
+          <p style="margin:6px 0"><strong>ปริมาณงานที่ส่ง:</strong> <?= $pr['submitted_work'] ? nl2br(esc($pr['submitted_work'])) : '-' ?></p>
+        <?php endif; ?>
+
+        <div style="margin-top:8px;display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+          <span>ผลการประเมิน:</span>
+          <?php if (!empty($pr['rating'])): ?>
+            <span class="badge <?= $pr['rating'] === 'ดี' ? 'done' : ($pr['rating'] === 'ปรับปรุง' ? 'late' : 'soon') ?>"><?= esc($pr['rating']) ?></span>
+            <small style="color:var(--muted)"><?= esc($pr['evaluated_by']) ?> · <?= thai_date($pr['evaluated_date']) ?></small>
+          <?php else: ?>
+            <span class="badge notstarted">ยังไม่ประเมิน</span>
+          <?php endif; ?>
+          <?php if ($canRateProgress): ?>
+            <form method="post" action="project_progress_rate.php" style="display:inline-flex;gap:6px;align-items:center">
+              <?= csrf_field() ?>
+              <input type="hidden" name="project_id" value="<?= $id ?>">
+              <input type="hidden" name="round_no" value="<?= $r ?>">
+              <select name="rating" style="width:auto">
+                <?php foreach (PROGRESS_RATINGS as $rt): ?><option <?= ($pr['rating'] ?? '') === $rt ? 'selected' : '' ?>><?= esc($rt) ?></option><?php endforeach; ?>
+              </select>
+              <button type="submit" class="btn ghost sm">✅ บันทึกผล</button>
+            </form>
+          <?php endif; ?>
+        </div>
+      </div>
+    <?php endfor; ?>
+
+    <div class="panel" style="margin-bottom:16px;padding:14px">
+      <strong>คำขอเสนอสอบโครงการ</strong>
+      <?php if ($defenseReq && $defenseReq['requested_by']): ?>
+        <p style="margin:8px 0;color:var(--green)">✅ โครงงานนี้จัดทำเสร็จสิ้นสมบูรณ์แล้ว ขอเสนอสอบโครงการ — โดย <?= esc($defenseReq['requested_by']) ?> · <?= thai_date($defenseReq['requested_date']) ?></p>
+      <?php elseif (qc_can_sign($project, $user, 'advisor')): ?>
+        <form method="post" action="project_defense_request.php" style="margin-top:8px" data-confirm="ยืนยันว่าโครงงานนี้เสร็จสมบูรณ์และขอเสนอสอบโครงการ?">
+          <?= csrf_field() ?>
+          <input type="hidden" name="project_id" value="<?= $id ?>">
+          <input type="hidden" name="action" value="request">
+          <button type="submit" class="btn sm">📤 ขอเสนอสอบโครงการ (ครูที่ปรึกษา)</button>
+        </form>
+      <?php else: ?>
+        <p style="margin:8px 0;color:var(--muted)">ยังไม่มีการขอเสนอสอบโครงการ</p>
+      <?php endif; ?>
+
+      <?php if ($defenseReq && $defenseReq['instructor_note']): ?>
+        <p style="margin:8px 0"><strong>ความเห็นของครูผู้สอนวิชาโครงงาน:</strong> <?= nl2br(esc($defenseReq['instructor_note'])) ?> <small style="color:var(--muted)">— <?= esc($defenseReq['instructor_by']) ?> · <?= thai_date($defenseReq['instructor_date']) ?></small></p>
+      <?php elseif (qc_can_sign($project, $user, 'instructor')): ?>
+        <form method="post" action="project_defense_request.php" style="margin-top:8px">
+          <?= csrf_field() ?>
+          <input type="hidden" name="project_id" value="<?= $id ?>">
+          <input type="hidden" name="action" value="note">
+          <label class="f full" style="margin:8px 0">ความเห็นของครูผู้สอนวิชาโครงงาน (ควรปรับปรุงเพิ่มเติมเรื่อง...)
+            <textarea name="note" rows="2"></textarea>
+          </label>
+          <button type="submit" class="btn ghost sm">💾 บันทึกความเห็น</button>
+        </form>
+      <?php endif; ?>
+    </div>
 
     <div class="section-title">การกำกับคุณภาพวิชาโครงงาน</div>
     <?php if ($qcPassed): ?>

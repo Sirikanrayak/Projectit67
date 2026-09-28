@@ -12,6 +12,30 @@ if ($editId) {
     }
 }
 
+// อนุมัติหัวข้อจากข้อเสนอโครงงาน (proposal) — ใช้ฟอร์มเพิ่มโครงงานเดิม พรีฟิลค่าจากหัวข้อที่เลือก
+$proposalId = (!$editId && isset($_GET['proposal_id'])) ? (int) $_GET['proposal_id'] : null;
+$proposal = null;
+$proposalItem = null;
+if ($proposalId) {
+    if ($user['role'] === 'student') {
+        flash_set('err', 'คุณไม่มีสิทธิ์อนุมัติข้อเสนอโครงงาน');
+        redirect('proposals.php');
+    }
+    $proposal = get_proposal($pdo, $proposalId);
+    if (!$proposal || $proposal['status'] !== 'pending' || !proposal_can_review($proposal, $user)) {
+        flash_set('err', 'ไม่พบข้อเสนอโครงงาน หรือคุณไม่มีสิทธิ์อนุมัติ');
+        redirect('proposals.php');
+    }
+    $itemSeq = (int) ($_GET['item_seq'] ?? 0);
+    foreach (get_proposal_items($pdo, $proposalId) as $it) {
+        if ((int) $it['seq'] === $itemSeq) { $proposalItem = $it; break; }
+    }
+    if (!$proposalItem) {
+        flash_set('err', 'ไม่พบหัวข้อที่เลือก');
+        redirect('proposal_review.php?id=' . $proposalId);
+    }
+}
+
 $errors = [];
 $values = $project ? [
     'title' => $project['title'], 'title_en' => $project['title_en'], 'code' => $project['code'],
@@ -21,10 +45,12 @@ $values = $project ? [
     'members' => implode("\n", $project['member_names']),
     'member_emails' => implode("\n", array_column(member_accounts($pdo, $project), 'email')),
 ] : [
-    'title' => '', 'title_en' => '', 'code' => '', 'type' => PROJECT_TYPES[0], 'level' => '', 'group' => '',
+    'title' => $proposalItem['title'] ?? '', 'title_en' => '', 'code' => '', 'type' => PROJECT_TYPES[0],
+    'level' => $proposal['level'] ?? '', 'group' => $proposal['student_group'] ?? '',
     'advisor' => is_teacher($user) ? $user['name'] : '', 'co_advisor' => '',
     'start_date' => date('Y-m-d'), 'due_date' => '', 'note' => '',
-    'members' => '', 'member_emails' => (!is_admin($user) && !is_teacher($user)) ? $user['email'] : '',
+    'members' => '',
+    'member_emails' => $proposal['member_emails'] ?? ((!is_admin($user) && !is_teacher($user)) ? $user['email'] : ''),
 ];
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -103,6 +129,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     'steps' => json_encode(array_fill(0, count(STEPS), false)),
                 ]);
                 $pid = (int) $pdo->lastInsertId();
+                if (!empty($_POST['proposal_id']) && !empty($_POST['item_seq'])) {
+                    $propId2 = (int) $_POST['proposal_id'];
+                    $seq2 = (int) $_POST['item_seq'];
+                    $proposal2 = get_proposal($pdo, $propId2);
+                    if ($proposal2 && $proposal2['status'] === 'pending' && proposal_can_review($proposal2, $user)) {
+                        $pdo->prepare('UPDATE project_proposal_items SET is_selected = 1 WHERE proposal_id = ? AND seq = ?')
+                            ->execute([$propId2, $seq2]);
+                        $pdo->prepare("UPDATE project_proposals SET status = 'approved', approved_project_id = ?, reviewed_by = ?, reviewed_at = NOW() WHERE id = ?")
+                            ->execute([$pid, $user['name'], $propId2]);
+                    }
+                }
                 flash_set('ok', 'เพิ่มโครงงานแล้ว');
             }
             $insMember = $pdo->prepare('INSERT IGNORE INTO project_members (project_id, user_id) VALUES (?, ?)');
@@ -127,6 +164,11 @@ $advisorNames = known_advisor_names($pdo);
     <h2><?= $project ? '✏️ แก้ไขโครงงาน' : '➕ เพิ่มโครงงาน' ?></h2>
     <form method="post" novalidate style="margin-top:14px">
       <?= csrf_field() ?>
+      <?php if ($proposalId && $proposalItem): ?>
+        <input type="hidden" name="proposal_id" value="<?= (int) $proposalId ?>">
+        <input type="hidden" name="item_seq" value="<?= (int) $proposalItem['seq'] ?>">
+        <p class="msg ok" style="margin-bottom:12px">📝 กำลังอนุมัติหัวข้อจากข้อเสนอโครงงาน #<?= (int) $proposalItem['seq'] ?> — กรอกรายละเอียดที่เหลือแล้วกดบันทึกเพื่อสร้างโครงงานและอนุมัติข้อเสนอนี้</p>
+      <?php endif; ?>
       <div class="form-grid">
         <label class="f full">ชื่อโครงงาน (ภาษาไทย) <span class="req">*</span>
           <input type="text" name="title" value="<?= esc($values['title']) ?>">
