@@ -56,8 +56,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!$memberNames && !$memberIds) $errors[] = 'กรุณาระบุผู้จัดทำอย่างน้อย 1 คน';
     if ($values['advisor'] === '') {
         $errors[] = 'กรุณากรอกครูที่ปรึกษาหลัก';
-    } elseif (is_teacher($user) && !in_array($user['name'], [$values['advisor'], $values['co_advisor']], true)) {
-        $errors[] = "ต้องระบุ “{$user['name']}” เป็นครูที่ปรึกษาหลักหรือร่วม มิฉะนั้นคุณจะไม่เห็นโครงงานนี้";
+    } elseif (
+        is_teacher($user)
+        && !in_array($user['name'], [$values['advisor'], $values['co_advisor']], true)
+        && !teaches_level_group($user, $values['level'], $values['group'])
+    ) {
+        $errors[] = "ต้องระบุ “{$user['name']}” เป็นครูที่ปรึกษาหลักหรือร่วม หรือเลือกระดับชั้น/กลุ่มเรียนที่ท่านเป็นครูผู้สอน มิฉะนั้นคุณจะไม่เห็นโครงงานนี้";
     }
     if ($values['start_date'] && $values['due_date'] && $values['due_date'] < $values['start_date']) {
         $errors[] = 'กำหนดส่งต้องไม่ก่อนวันที่เริ่ม';

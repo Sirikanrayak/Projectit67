@@ -16,6 +16,7 @@ function current_user(PDO $pdo): ?array
         unset($_SESSION['user_id']);
         return $cached = null;
     }
+    $user['instructor_of'] = $user['role'] === 'teacher' ? teacher_assignments($pdo, (int) $user['id']) : [];
     return $cached = $user;
 }
 

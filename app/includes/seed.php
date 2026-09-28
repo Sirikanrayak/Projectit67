@@ -23,6 +23,22 @@ function ensure_site_settings(PDO $pdo): void
     }
 }
 
+// รองรับฐานข้อมูลที่สร้างไว้ก่อนมีระบบ "ครูผู้สอนโครงงาน" — สร้างตารางถ้ายังไม่มี (ปลอดภัยที่จะรันซ้ำ)
+function ensure_teacher_assignments(PDO $pdo): void
+{
+    $pdo->exec(
+        'CREATE TABLE IF NOT EXISTS teacher_assignments (
+          id             INT AUTO_INCREMENT PRIMARY KEY,
+          user_id        INT NOT NULL,
+          level          VARCHAR(20) NOT NULL,
+          student_group  VARCHAR(20) NOT NULL,
+          created_at     DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+          UNIQUE KEY uniq_teacher_level_group (user_id, level, student_group),
+          CONSTRAINT fk_ta_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci'
+    );
+}
+
 function seed_if_empty(PDO $pdo): void
 {
     $hasAdmin = (int) $pdo->query("SELECT COUNT(*) c FROM users WHERE role='admin'")->fetch()['c'];

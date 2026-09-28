@@ -44,8 +44,11 @@ $logoUrl = site_logo_url($pdo);
     </div>
     <nav>
       <a class="<?= $activeView === 'dashboard' ? 'active' : '' ?>" href="dashboard.php">📊 ภาพรวม</a>
-      <a class="<?= $activeView === 'projects' ? 'active' : '' ?>" href="projects.php"><?= is_admin($user) ? '📁 โครงงานทั้งหมด' : (is_teacher($user) ? '📁 โครงงานที่ปรึกษา' : '📁 โครงงานของฉัน') ?></a>
+      <a class="<?= $activeView === 'projects' ? 'active' : '' ?>" href="projects.php"><?= is_admin($user) ? '📁 โครงงานทั้งหมด' : (is_teacher($user) ? (!empty($user['instructor_of']) ? '📁 โครงงานที่ดูแล' : '📁 โครงงานที่ปรึกษา') : '📁 โครงงานของฉัน') ?></a>
       <a class="<?= $activeView === 'calendar' ? 'active' : '' ?>" href="calendar.php">📅 ปฏิทิน</a>
+      <?php if (is_admin($user) || !empty($user['instructor_of'])): ?>
+        <a class="<?= $activeView === 'summary' ? 'active' : '' ?>" href="project_summary.php">📋 สรุปโครงงาน</a>
+      <?php endif; ?>
       <?php if (is_admin($user)): ?>
         <a class="<?= $activeView === 'advisors' ? 'active' : '' ?>" href="advisors.php">🧑‍🏫 ครูที่ปรึกษา</a>
         <a class="<?= $activeView === 'users' ? 'active' : '' ?>" href="users.php">👥 จัดการผู้ใช้<?php if ($pendingUsers): ?> <span class="count"><?= $pendingUsers ?></span><?php endif; ?></a>

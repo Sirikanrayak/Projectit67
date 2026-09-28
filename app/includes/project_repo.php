@@ -39,21 +39,60 @@ function project_advises(array $project, array $user): bool
     return $project['advisor'] === $user['name'] || $project['co_advisor'] === $user['name'];
 }
 
+// ดึงรายการ (ระดับชั้น/กลุ่มเรียน) ที่ครูคนนี้ได้รับมอบหมายให้เป็น "ครูผู้สอนโครงงาน"
+function teacher_assignments(PDO $pdo, int $userId): array
+{
+    $stmt = $pdo->prepare('SELECT level, student_group FROM teacher_assignments WHERE user_id = ? ORDER BY level, student_group');
+    $stmt->execute([$userId]);
+    return $stmt->fetchAll();
+}
+
+function save_teacher_assignments(PDO $pdo, int $userId, array $pairs): void
+{
+    $pdo->prepare('DELETE FROM teacher_assignments WHERE user_id = ?')->execute([$userId]);
+    $ins = $pdo->prepare('INSERT IGNORE INTO teacher_assignments (user_id, level, student_group) VALUES (?, ?, ?)');
+    foreach ($pairs as $p) {
+        if ($p['level'] === '' || $p['student_group'] === '') continue;
+        $ins->execute([$userId, $p['level'], $p['student_group']]);
+    }
+}
+
+// ครูผู้สอนโครงงานมีสิทธิ์เหนือโครงงานทุกชิ้นในระดับชั้น/กลุ่มเรียนที่ได้รับมอบหมาย ไม่ว่าจะเป็นครูที่ปรึกษาเองหรือไม่
+function project_taught_by(array $project, array $user): bool
+{
+    if ($user['role'] !== 'teacher' || empty($user['instructor_of'])) return false;
+    foreach ($user['instructor_of'] as $a) {
+        if ($a['level'] === $project['level'] && $a['student_group'] === $project['student_group']) return true;
+    }
+    return false;
+}
+
+// ครูผู้สอนโครงงานสำหรับระดับชั้น/กลุ่มเรียนที่ระบุ (ใช้ตอนเพิ่มโครงงานใหม่ ก่อนมี $project จริง)
+function teaches_level_group(array $user, string $level, string $group): bool
+{
+    if ($user['role'] !== 'teacher' || empty($user['instructor_of'])) return false;
+    foreach ($user['instructor_of'] as $a) {
+        if ($a['level'] === $level && $a['student_group'] === $group) return true;
+    }
+    return false;
+}
+
 function project_can_edit(array $project, array $user): bool
 {
     if ($user['role'] === 'admin') return true;
     if (in_array((int) $user['id'], $project['member_ids'], true)) return true;
-    return project_advises($project, $user);
+    if (project_advises($project, $user)) return true;
+    return project_taught_by($project, $user);
 }
 
 function project_can_grade(array $project, array $user): bool
 {
-    return $user['role'] === 'admin' || project_advises($project, $user);
+    return $user['role'] === 'admin' || project_advises($project, $user) || project_taught_by($project, $user);
 }
 
 function project_can_delete(array $project, array $user): bool
 {
-    return $user['role'] === 'admin' || project_advises($project, $user);
+    return $user['role'] === 'admin' || project_advises($project, $user) || project_taught_by($project, $user);
 }
 
 function visible_projects(PDO $pdo, array $user): array

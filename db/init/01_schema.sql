@@ -72,6 +72,16 @@ CREATE TABLE IF NOT EXISTS project_files (
   CONSTRAINT fk_pf_project FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+CREATE TABLE IF NOT EXISTS teacher_assignments (
+  id             INT AUTO_INCREMENT PRIMARY KEY,
+  user_id        INT NOT NULL,
+  level          VARCHAR(20) NOT NULL,
+  student_group  VARCHAR(20) NOT NULL,
+  created_at     DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE KEY uniq_teacher_level_group (user_id, level, student_group),
+  CONSTRAINT fk_ta_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 INSERT IGNORE INTO settings (`key`, `value`) VALUES
   ('require_approval', '1'),
   ('site_name', 'ระบบติดตามโครงงานนักเรียน'),

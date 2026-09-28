@@ -12,14 +12,19 @@ if ($editId) {
 }
 
 $errors = [];
+$assignmentsText = function (array $pairs): string {
+    return implode("\n", array_map(fn ($a) => $a['level'] . '/' . $a['student_group'], $pairs));
+};
+
 $values = $editUser ? [
     'name' => $editUser['name'], 'email' => $editUser['email'], 'role' => $editUser['role'], 'status' => $editUser['status'],
     'student_id' => $editUser['student_id'], 'level' => $editUser['level'], 'group' => $editUser['student_group'],
-] : ['name' => '', 'email' => '', 'role' => 'student', 'status' => 'active', 'student_id' => '', 'level' => '', 'group' => ''];
+    'assignments' => $editUser['role'] === 'teacher' ? $assignmentsText(teacher_assignments($pdo, (int) $editUser['id'])) : '',
+] : ['name' => '', 'email' => '', 'role' => 'student', 'status' => 'active', 'student_id' => '', 'level' => '', 'group' => '', 'assignments' => ''];
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     csrf_check();
-    foreach (['name', 'role', 'status', 'student_id', 'level', 'group'] as $k) $values[$k] = trim($_POST[$k] ?? '');
+    foreach (['name', 'role', 'status', 'student_id', 'level', 'group', 'assignments'] as $k) $values[$k] = trim($_POST[$k] ?? '');
     $values['email'] = mb_strtolower(trim($_POST['email'] ?? ''));
     $pw = (string) ($_POST['password'] ?? '');
 
@@ -46,6 +51,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $errors[] = 'มีบัญชีครูที่ปรึกษาชื่อนี้แล้ว';
     }
 
+    $assignPairs = [];
+    foreach (preg_split('/\r?\n/', $values['assignments']) as $line) {
+        $line = trim($line);
+        if ($line === '' || !str_contains($line, '/')) continue;
+        [$lv, $grp] = array_map('trim', explode('/', $line, 2));
+        if (!in_array($lv, LEVELS, true) || $grp === '') continue;
+        $assignPairs[] = ['level' => $lv, 'student_group' => $grp];
+    }
+
     if (!$errors) {
         if ($editUser) {
             if ($editUser['role'] === 'teacher' && $values['role'] === 'teacher') {
@@ -60,6 +74,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if ($pw) { $sql .= ', password_hash=:hash'; $params['hash'] = password_hash($pw, PASSWORD_BCRYPT); }
             $sql .= ' WHERE id=:id';
             $pdo->prepare($sql)->execute($params);
+            save_teacher_assignments($pdo, (int) $editUser['id'], $values['role'] === 'teacher' ? $assignPairs : []);
             flash_set('ok', 'บันทึกข้อมูลผู้ใช้แล้ว');
         } else {
             $pdo->prepare(
@@ -70,6 +85,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 'role' => $values['role'], 'status' => $values['status'],
                 'sid' => $values['student_id'] ?: null, 'level' => $values['level'] ?: null, 'grp' => $values['group'] ?: null,
             ]);
+            if ($values['role'] === 'teacher') {
+                save_teacher_assignments($pdo, (int) $pdo->lastInsertId(), $assignPairs);
+            }
             flash_set('ok', 'เพิ่มผู้ใช้แล้ว');
         }
         redirect('users.php');
@@ -116,6 +134,9 @@ require __DIR__ . '/../includes/layout/app_nav.php';
         <label class="f">กลุ่มเรียน
           <input type="text" name="group" value="<?= esc((string) $values['group']) ?>">
         </label>
+        <label class="f full" id="fAssignments">🧑‍🏫 สิทธิ์ครูผู้สอนโครงงาน <small>(1 คู่ต่อบรรทัด รูปแบบ ระดับชั้น/กลุ่มเรียน เช่น ปวส.2/1 · ให้สิทธิ์เพิ่ม/ลบ/แก้ไขโครงงานทุกชิ้นในระดับชั้น/กลุ่มเรียนนั้น ไม่ว่าจะเป็นครูที่ปรึกษาเองหรือไม่)</small>
+          <textarea name="assignments" rows="3" placeholder="ปวส.2/1&#10;ปวส.2/2"><?= esc($values['assignments']) ?></textarea>
+        </label>
         <label class="f full"><?= $editUser ? 'ตั้งรหัสผ่านใหม่ <small>(เว้นว่างถ้าไม่ต้องการเปลี่ยน)</small>' : 'รหัสผ่าน <span class="req">*</span>' ?>
           <input type="password" name="password" autocomplete="new-password">
         </label>
@@ -128,4 +149,13 @@ require __DIR__ . '/../includes/layout/app_nav.php';
     </form>
   </div>
 </main>
+<script>
+  (function () {
+    var roleSel = document.querySelector('select[name="role"]');
+    var box = document.getElementById('fAssignments');
+    function sync() { box.style.display = roleSel.value === 'teacher' ? '' : 'none'; }
+    roleSel.addEventListener('change', sync);
+    sync();
+  })();
+</script>
 <?php require __DIR__ . '/../includes/layout/footer.php'; ?>
