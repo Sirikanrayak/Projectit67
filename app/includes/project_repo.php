@@ -51,6 +51,11 @@ function project_can_grade(array $project, array $user): bool
     return $user['role'] === 'admin' || project_advises($project, $user);
 }
 
+function project_can_delete(array $project, array $user): bool
+{
+    return $user['role'] === 'admin' || project_advises($project, $user);
+}
+
 function visible_projects(PDO $pdo, array $user): array
 {
     $all = get_all_projects($pdo);

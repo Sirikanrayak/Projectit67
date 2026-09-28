@@ -49,7 +49,7 @@ require __DIR__ . '/../includes/layout/app_nav.php';
               <?php if ($canEdit): ?>
                 <a class="btn ghost sm" href="project_form.php?id=<?= (int) $p['id'] ?>">✏️ แก้ไข</a>
               <?php endif; ?>
-              <?php if (is_admin($user)): ?>
+              <?php if (project_can_delete($p, $user)): ?>
                 <form method="post" action="project_delete.php" style="display:inline" data-confirm="ยืนยันการลบโครงงาน “<?= esc($p['title']) ?>”?" data-confirm-text="ข้อมูลจะไม่สามารถกู้คืนได้" data-confirm-button="ลบโครงงาน">
                   <?= csrf_field() ?>
                   <input type="hidden" name="id" value="<?= (int) $p['id'] ?>">

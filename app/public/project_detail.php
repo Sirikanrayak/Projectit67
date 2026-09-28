@@ -31,7 +31,7 @@ require __DIR__ . '/../includes/layout/app_nav.php';
     <div class="head-row" style="margin-bottom:6px">
       <h2 style="color:var(--brand-900)"><?= esc($project['title']) ?></h2>
       <div style="display:flex;gap:8px;flex-wrap:wrap">
-        <?php if (is_admin($user)): ?>
+        <?php if (project_can_delete($project, $user)): ?>
           <form method="post" action="project_delete.php" data-confirm="ยืนยันการลบโครงงาน “<?= esc($project['title']) ?>”?" data-confirm-text="ข้อมูลจะไม่สามารถกู้คืนได้" data-confirm-button="ลบโครงงาน">
             <?= csrf_field() ?>
             <input type="hidden" name="id" value="<?= $id ?>">
