@@ -14,7 +14,7 @@ if ($project && $action === 'request' && qc_can_sign($project, $user, 'advisor')
          VALUES (:pid, :by, CURDATE())
          ON DUPLICATE KEY UPDATE requested_by = VALUES(requested_by), requested_date = VALUES(requested_date)'
     )->execute(['pid' => $pid, 'by' => $user['name']]);
-    flash_set('ok', 'บันทึกคำขอเสนอสอบโครงการแล้ว');
+    flash_set('ok', 'บันทึกคำขอเสนอสอบโครงงานแล้ว');
 } elseif ($project && $action === 'note' && qc_can_sign($project, $user, 'instructor')) {
     $note = trim($_POST['note'] ?? '');
     $pdo->prepare(

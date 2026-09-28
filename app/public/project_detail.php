@@ -184,28 +184,28 @@ require __DIR__ . '/../includes/layout/app_nav.php';
     <?php endfor; ?>
 
     <div class="panel" style="margin-bottom:16px;padding:14px">
-      <strong>คำขอเสนอสอบโครงการ</strong>
+      <strong>คำขอเสนอสอบโครงงาน</strong>
       <?php if ($defenseReq && $defenseReq['requested_by']): ?>
-        <p style="margin:8px 0;color:var(--green)">✅ โครงงานนี้จัดทำเสร็จสิ้นสมบูรณ์แล้ว ขอเสนอสอบโครงการ — โดย <?= esc($defenseReq['requested_by']) ?> · <?= thai_date($defenseReq['requested_date']) ?></p>
+        <p style="margin:8px 0;color:var(--green)">✅ โครงงานนี้จัดทำเสร็จสิ้นสมบูรณ์แล้ว ขอเสนอสอบโครงงาน — โดย <?= esc($defenseReq['requested_by']) ?> · <?= thai_date($defenseReq['requested_date']) ?></p>
       <?php elseif (qc_can_sign($project, $user, 'advisor')): ?>
-        <form method="post" action="project_defense_request.php" style="margin-top:8px" data-confirm="ยืนยันว่าโครงงานนี้เสร็จสมบูรณ์และขอเสนอสอบโครงการ?">
+        <form method="post" action="project_defense_request.php" style="margin-top:8px" data-confirm="ยืนยันว่าโครงงานนี้เสร็จสมบูรณ์และขอเสนอสอบโครงงาน?">
           <?= csrf_field() ?>
           <input type="hidden" name="project_id" value="<?= $id ?>">
           <input type="hidden" name="action" value="request">
-          <button type="submit" class="btn sm">📤 ขอเสนอสอบโครงการ (ครูที่ปรึกษา)</button>
+          <button type="submit" class="btn sm">📤 ขอเสนอสอบโครงงาน (ครูที่ปรึกษา)</button>
         </form>
       <?php else: ?>
-        <p style="margin:8px 0;color:var(--muted)">ยังไม่มีการขอเสนอสอบโครงการ</p>
+        <p style="margin:8px 0;color:var(--muted)">ยังไม่มีการขอเสนอสอบโครงงาน</p>
       <?php endif; ?>
 
       <?php if ($defenseReq && $defenseReq['instructor_note']): ?>
-        <p style="margin:8px 0"><strong>ความเห็นของครูผู้สอนวิชาโครงงาน:</strong> <?= nl2br(esc($defenseReq['instructor_note'])) ?> <small style="color:var(--muted)">— <?= esc($defenseReq['instructor_by']) ?> · <?= thai_date($defenseReq['instructor_date']) ?></small></p>
+        <p style="margin:8px 0"><strong>ความเห็นของครูผู้สอนโครงงานด้านเทคโนโลยีสารสนเทศ:</strong> <?= nl2br(esc($defenseReq['instructor_note'])) ?> <small style="color:var(--muted)">— <?= esc($defenseReq['instructor_by']) ?> · <?= thai_date($defenseReq['instructor_date']) ?></small></p>
       <?php elseif (qc_can_sign($project, $user, 'instructor')): ?>
         <form method="post" action="project_defense_request.php" style="margin-top:8px">
           <?= csrf_field() ?>
           <input type="hidden" name="project_id" value="<?= $id ?>">
           <input type="hidden" name="action" value="note">
-          <label class="f full" style="margin:8px 0">ความเห็นของครูผู้สอนวิชาโครงงาน (ควรปรับปรุงเพิ่มเติมเรื่อง...)
+          <label class="f full" style="margin:8px 0">ความเห็นของครูผู้สอนโครงงานด้านเทคโนโลยีสารสนเทศ (ควรปรับปรุงเพิ่มเติมเรื่อง...)
             <textarea name="note" rows="2"></textarea>
           </label>
           <button type="submit" class="btn ghost sm">💾 บันทึกความเห็น</button>
@@ -213,11 +213,11 @@ require __DIR__ . '/../includes/layout/app_nav.php';
       <?php endif; ?>
     </div>
 
-    <div class="section-title">การกำกับคุณภาพวิชาโครงงาน</div>
+    <div class="section-title">การกำกับคุณภาพโครงงานด้านเทคโนโลยีสารสนเทศ</div>
     <?php if ($qcPassed): ?>
       <p class="msg ok" style="margin-bottom:10px">✅ ผ่านการกำกับคุณภาพครบทุกขั้นตอนแล้ว สามารถออกผลการประเมินได้</p>
     <?php else: ?>
-      <p class="msg err" style="margin-bottom:10px">🚫 ยังผ่านการกำกับคุณภาพไม่ครบทุกขั้นตอน — ครูผู้สอนวิชาโครงการจะระงับการออกเกรดจนกว่าจะผ่านครบ</p>
+      <p class="msg err" style="margin-bottom:10px">🚫 ยังผ่านการกำกับคุณภาพไม่ครบทุกขั้นตอน — ครูผู้สอนโครงงานด้านเทคโนโลยีสารสนเทศจะระงับการออกเกรดจนกว่าจะผ่านครบ</p>
     <?php endif; ?>
     <ul style="list-style:none;padding:0;margin:0 0 16px">
       <?php foreach (QC_STEPS as $i => $step):
