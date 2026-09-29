@@ -47,6 +47,7 @@ $logoUrl = site_logo_url($pdo);
       <a class="<?= $activeView === 'dashboard' ? 'active' : '' ?>" href="dashboard.php">📊 ภาพรวม</a>
       <a class="<?= $activeView === 'projects' ? 'active' : '' ?>" href="projects.php"><?= is_admin($user) ? '📁 โครงงานทั้งหมด' : (is_teacher($user) ? (!empty($user['instructor_of']) ? '📁 โครงงานที่ดูแล' : '📁 โครงงานที่ปรึกษา') : '📁 โครงงานของฉัน') ?></a>
       <a class="<?= $activeView === 'calendar' ? 'active' : '' ?>" href="calendar.php">📅 ปฏิทิน</a>
+      <a class="<?= $activeView === 'showcase' ? 'active' : '' ?>" href="showcase.php" target="_blank">🎓 แสดงผลงาน</a>
       <?php if ($user['role'] === 'student'): ?>
         <a class="<?= $activeView === 'proposals' ? 'active' : '' ?>" href="proposals.php">📝 เสนอชื่อโครงงาน</a>
       <?php endif; ?>

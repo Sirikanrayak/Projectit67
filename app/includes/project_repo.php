@@ -242,6 +242,14 @@ function get_defense_request(PDO $pdo, int $projectId): ?array
     return $row ?: null;
 }
 
+function get_showcase_projects(PDO $pdo): array
+{
+    $rows = $pdo->query(
+        PROJECT_SELECT_SQL . ' WHERE p.showcase_enabled = 1 GROUP BY p.id ORDER BY p.level, p.student_group, p.title'
+    )->fetchAll();
+    return array_map('decode_project', $rows);
+}
+
 function rename_advisor_everywhere(PDO $pdo, string $oldName, string $newName): void
 {
     if ($oldName === '' || $oldName === $newName) return;

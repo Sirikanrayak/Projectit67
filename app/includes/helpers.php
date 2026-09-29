@@ -84,6 +84,18 @@ function proposal_status_badge(string $status): string
 
 const PROGRESS_RATINGS = ['ดี', 'พอใช้', 'ปรับปรุง'];
 
+// หน้าแสดงผลงานของนักเรียน (สาธารณะ)
+const MAX_SHOWCASE_IMAGE_BYTES = 3 * 1024 * 1024;
+const SHOWCASE_DESC_MAX_WORDS = 500;
+
+function word_count_th(string $text): int
+{
+    $text = trim($text);
+    if ($text === '') return 0;
+    $tokens = preg_split('/\s+/u', $text) ?: [];
+    return count($tokens);
+}
+
 const DUE_SOON_DAYS = 7;
 const MAX_FILE_BYTES = 3 * 1024 * 1024;
 const MAX_FILES_PER_PROJECT = 8;

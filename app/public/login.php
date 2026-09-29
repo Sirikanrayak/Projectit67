@@ -80,6 +80,7 @@ $logoUrl = site_logo_url($pdo);
         <button class="btn" type="submit">🔒 เข้าสู่ระบบ</button>
         <p class="security-note">🛡️ ระบบมีความปลอดภัยตามมาตรฐานสถานศึกษา</p>
         <p class="hint">ยังไม่มีบัญชี? <a href="register.php">สมัครใช้งาน</a></p>
+        <p class="hint">🎓 <a href="showcase.php">ชมผลงานของนักเรียน</a></p>
       </form>
     </div>
   </div>

@@ -45,4 +45,5 @@ ensure_site_settings($pdo);
 ensure_teacher_assignments($pdo);
 ensure_project_qc($pdo);
 ensure_proposals_and_progress($pdo);
+ensure_showcase_fields($pdo);
 seed_if_empty($pdo);

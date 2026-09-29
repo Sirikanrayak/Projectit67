@@ -38,6 +38,10 @@ CREATE TABLE IF NOT EXISTS projects (
   member_names    JSON DEFAULT NULL,
   steps           JSON NOT NULL,
   evaluation      JSON DEFAULT NULL,
+  showcase_enabled TINYINT(1) NOT NULL DEFAULT 0,
+  showcase_image   VARCHAR(255) NOT NULL DEFAULT '',
+  showcase_link    VARCHAR(255) NOT NULL DEFAULT '',
+  showcase_desc    TEXT,
   created_at      DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at      DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

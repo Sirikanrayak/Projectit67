@@ -118,6 +118,21 @@ function ensure_proposals_and_progress(PDO $pdo): void
     );
 }
 
+// รองรับฐานข้อมูลที่สร้างไว้ก่อนมีหน้าแสดงผลงานนักเรียน — เพิ่มคอลัมน์ถ้ายังไม่มี (ปลอดภัยที่จะรันซ้ำ)
+function ensure_showcase_fields(PDO $pdo): void
+{
+    $col = $pdo->query("SHOW COLUMNS FROM projects LIKE 'showcase_enabled'")->fetch();
+    if (!$col) {
+        $pdo->exec(
+            "ALTER TABLE projects
+             ADD COLUMN showcase_enabled TINYINT(1) NOT NULL DEFAULT 0,
+             ADD COLUMN showcase_image VARCHAR(255) NOT NULL DEFAULT '',
+             ADD COLUMN showcase_link VARCHAR(255) NOT NULL DEFAULT '',
+             ADD COLUMN showcase_desc TEXT"
+        );
+    }
+}
+
 function seed_if_empty(PDO $pdo): void
 {
     $hasAdmin = (int) $pdo->query("SELECT COUNT(*) c FROM users WHERE role='admin'")->fetch()['c'];

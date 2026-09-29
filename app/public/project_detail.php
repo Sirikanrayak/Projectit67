@@ -22,6 +22,7 @@ $gradingBlocked = $grading && $user['role'] !== 'admin' && !$qcPassed;
 $progressRounds = get_progress_rounds($pdo, $id);
 $defenseReq = get_defense_request($pdo, $id);
 $canRateProgress = qc_can_sign($project, $user, 'any');
+$canShowcase = $editable && $user['role'] !== 'student';
 $ev = $project['evaluation'];
 $evScores = $ev['scores'] ?? [];
 $evTotal = array_sum(array_map(fn ($r) => (int) ($evScores[$r['key']] ?? 0), RUBRIC));
@@ -287,6 +288,34 @@ require __DIR__ . '/../includes/layout/app_nav.php';
       <dl class="info-grid"><?php foreach (RUBRIC as $r): ?><dt><?= esc($r['text']) ?></dt><dd><?= (int) ($evScores[$r['key']] ?? 0) ?> / <?= $r['max'] ?></dd><?php endforeach; ?></dl>
       <?php if (!empty($ev['comment'])): ?><p style="white-space:pre-line;margin:10px 0 0"><?= esc($ev['comment']) ?></p><?php endif; ?>
       <p class="eval-meta" style="margin-top:10px">ประเมินโดย <?= esc($ev['by']) ?> · <?= thai_date($ev['date']) ?></p>
+    <?php endif; ?>
+
+    <?php if ($canShowcase): ?>
+      <div class="section-title">แสดงผลงานในหน้าแสดงผลงานสาธารณะ</div>
+      <form method="post" action="project_showcase_update.php" enctype="multipart/form-data">
+        <?= csrf_field() ?>
+        <input type="hidden" name="project_id" value="<?= $id ?>">
+        <label class="check" style="margin-bottom:10px;display:block">
+          <input type="checkbox" name="showcase_enabled" value="1" <?= $project['showcase_enabled'] ? 'checked' : '' ?>>
+          แสดงโครงงานนี้ในหน้า “แสดงผลงานของนักเรียน” <small>(เปิดสาธารณะ ไม่ต้องเข้าสู่ระบบ)</small>
+        </label>
+        <?php if ($project['showcase_image']): ?>
+          <div style="margin-bottom:10px">
+            <img src="assets/showcase/<?= esc($project['showcase_image']) ?>" alt="" style="max-width:220px;border-radius:8px;display:block;margin-bottom:6px">
+            <label class="check"><input type="checkbox" name="remove_image" value="1"> ลบรูปภาพปัจจุบัน</label>
+          </div>
+        <?php endif; ?>
+        <label class="f full" style="margin-bottom:10px">รูปภาพผลงาน <small>PNG, JPG, WEBP หรือ GIF · ไม่เกิน <?= fmt_bytes(MAX_SHOWCASE_IMAGE_BYTES) ?></small>
+          <input type="file" name="showcase_image" accept="image/png,image/jpeg,image/webp,image/gif">
+        </label>
+        <label class="f full" style="margin-bottom:10px">ลิงก์ผลงาน <small>เว็บไซต์ / วิดีโอ / ที่เก็บโค้ด (ไม่บังคับ)</small>
+          <input type="url" name="showcase_link" placeholder="https://..." value="<?= esc($project['showcase_link']) ?>">
+        </label>
+        <label class="f full" style="margin-bottom:10px">คำอธิบายผลงาน <small>ไม่เกิน <?= SHOWCASE_DESC_MAX_WORDS ?> คำ</small>
+          <textarea name="showcase_desc" rows="4"><?= esc($project['showcase_desc']) ?></textarea>
+        </label>
+        <button type="submit" class="btn ghost sm">💾 บันทึกการแสดงผล</button>
+      </form>
     <?php endif; ?>
   </div>
 </main>
